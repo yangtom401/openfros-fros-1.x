@@ -1,0 +1,36 @@
+name: Build OpenFros2 Firmware
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential git
+
+      - name: Clone OpenFros2
+        run: |
+          git clone https://github.com/destan19/openfros2.git
+          cd openfros2
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: Configure Firmware
+        run: |
+          cd openfros2
+          make menuconfig # 需要手动选择目标产品和插件
+
+      - name: Build Firmware
+        run: |
+          cd openfros2
+          make V=s
