@@ -16,11 +16,11 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential git
+          sudo apt-get install -y build-essential git python3.8 python3-pip
 
       - name: Clone OpenFros2
         run: |
-          git clone https://github.com/destan19/openfros2.git
+          git clone https://github.com/destan19/openfros2.git 
           cd openfros2
           ./scripts/feeds update -a
           ./scripts/feeds install -a
