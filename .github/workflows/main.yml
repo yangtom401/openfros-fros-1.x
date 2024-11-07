@@ -1,0 +1,57 @@
+name: Build OpenFros2 Firmware for MT7620 and PSG1218
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential git
+
+      - name: Clone OpenFros2
+        run: |
+          git clone https://github.com/destan19/openfros2.git
+          cd openfros2
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: Configure Firmware
+        run: |
+          cd openfros2
+          echo "CONFIG_TARGET_mt7620=y" >> .config
+          #echo "CONFIG_TARGET_psg1218=y" >> .config
+          make menuconfig # 需要手动选择其他插件
+
+      - name: Build Firmware
+        run: |
+          cd openfros2
+          make V=s
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: 'v1.0.0' # 你可以根据需要更改版本号
+          release_name: 'OpenFros2 MT7620 PSG1218 Release'
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Firmware to Release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: openfros2/bin/mt7620-firmware.bin # 请根据实际生成的固件路径修改
+          asset_name: 'mt7620-firmware.bin'
+          asset_content_type: 'application/octet-stream'
